@@ -53,7 +53,12 @@ func doRequest(ctx context.Context, req *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("do request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New("error in calling Google translate API")
@@ -67,7 +72,7 @@ func doRequest(ctx context.Context, req *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-// Function to translate a single piece of content
+// Translate Function to translate a single piece of content
 func Translate(ctx context.Context, content string, sourceLanguage, targetLanguage language.Tag) (*TranslationResult, error) {
 	sourceLanguageStr := "auto"
 	if !sourceLanguage.IsRoot() {
@@ -119,7 +124,7 @@ func Translate(ctx context.Context, content string, sourceLanguage, targetLangua
 	return t, nil
 }
 
-// Function to translate a batch of content
+// TranslateBatch Function to translate a batch of content
 func TranslateBatch(ctx context.Context, contents []string, from string, to string) ([]string, error) {
 	preparedText := encodeForBatch(contents)
 	token := getToken(strings.Join(preparedText, ""))
